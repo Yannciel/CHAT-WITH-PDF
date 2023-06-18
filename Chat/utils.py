@@ -1,3 +1,7 @@
+from PyPDF2 import PdfReader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
 from langchain.llms import OpenAI
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
@@ -9,20 +13,46 @@ from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 import streamlit as st
 
 load_dotenv(find_dotenv())
+import re
+
+load_dotenv(find_dotenv())
+embeddings = OpenAIEmbeddings()
 
 
-@st.cache(allow_output_mutation=True)
+def pdf_loader(pdf) -> str:
+    pdf_reader = PdfReader(pdf)
+
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+        # Merge hyphenated words
+        text = re.sub(r"(\w+)-\n(\w+)", r"\1\2", text)
+        # Fix newlines in the middle of sentences
+        text = re.sub(r"(?<!\n\s)\n(?!\s\n)", " ", text.strip())
+        # Remove multiple newlines
+        text = re.sub(r"\n\s*\n", "\n\n", text)
+    return text
+
+
+def create_db_from_pdf_text(text: str) -> FAISS:
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, chunk_overlap=100, length_function=len
+    )
+    docs = text_splitter.split_text(text)
+    db = FAISS.from_texts(docs, embedding=embeddings)
+    return db
+
+
 def search_docs(db: VectorStore, query: str, k=2) -> List[Document]:
     docs = db.similarity_search(query, k=k)
     docs_page_content = " ".join([d.page_content for d in docs])
     return docs_page_content
 
 
-@st.cache(allow_output_mutation=True)
 def get_response_from_query(
     docs_page_content: List[Document], query: str
 ) -> Dict[str, Any]:
-    llm = OpenAI("gpt-3.5-turbo-16k")
+    llm = OpenAI()
 
     prompt = PromptTemplate(
         input_variables=["question", "docs"],
@@ -40,7 +70,7 @@ def get_response_from_query(
             Vos réponses doivent être détaillées et complètes.
         """,
     )
-    chain = load_qa_with_sources_chain(prompt=prompt)
+    chain = LLMChain(llm=llm, prompt=prompt)
 
     answer = chain(
         {"input_documents": docs_page_content, "question": query},
@@ -49,7 +79,6 @@ def get_response_from_query(
     return answer
 
 
-@st.cache(allow_output_mutation=True)
 def get_sources(answer: Dict[str, Any], docs: List[Document]) -> List[Document]:
     """Gets the source documents for an answer."""
 

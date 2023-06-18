@@ -1,10 +1,15 @@
 import streamlit as st
 import pickle
-
 from openai.error import OpenAIError
 from langchain.callbacks import get_openai_callback
-from Models import pdf_reader, qa_llm
+from utils import (
+    pdf_loader,
+    create_db_from_pdf_text,
+    search_docs,
+    get_response_from_query,
+)
 import os
+
 
 # Sidebar contents
 with st.sidebar:
@@ -17,7 +22,6 @@ with st.sidebar:
     - [OpenAI](https://platform.openai.com/docs/models) LLM model
     """
     )
-
 
 
 def clear_submit():
@@ -34,41 +38,41 @@ def get_embeddings(pdf: str):
             VectorStored = pickle.load(f)
         print("Embedding loaded from the local disk")
     else:
-        text = pdf_reader.pdf_loader(pdf)
-        VectorStored = pdf_reader.create_db_from_pdf_text(
-            text
-        )
+        text = pdf_loader(pdf)
+        VectorStored = create_db_from_pdf_text(text)
         with open("{}.pkl".format(store_name_embeddings), "wb") as f:
             pickle.dump(VectorStored, f)
-    return store_name,VectorStored
+    return store_name, VectorStored
 
 
 def main():
     st.header("Chat with PDF 💬")
     # upload a PDF file
-    pdf = st.file_uploader("Upload your PDF", type="pdf",on_change=clear_submit,
-)
+    pdf = st.file_uploader(
+        "Upload your PDF",
+        type="pdf",
+        on_change=clear_submit,
+    )
 
     # st.write(pdf)
+    uploaded_file = None
     if pdf is not None:
         # # embeddings
         store_name, VectorStored = get_embeddings(pdf)
         st.write(f"{store_name}")
-    else:
-        raise ValueError("File type not supported!")
-    
+
     query = st.text_area("Ask a question about the document", on_change=clear_submit)
     button = st.button("Submit")
     if button or st.session_state.get("submit"):
         st.session_state["submit"] = True
         # Output Columns
         answer_col, sources_col = st.columns(2)
-        # sources = qa_llm.get_response_from_query(VectorStored, query)
+
         with get_openai_callback() as cb:
-            sources = qa_llm.search_docs(VectorStored, query)
+            sources = search_docs(VectorStored, query)
             print(cb)
         try:
-            answer = qa_llm.get_answer(sources, query)
+            answer = get_response_from_query(sources, query)
 
             with answer_col:
                 st.markdown("#### Answer")
@@ -84,5 +88,6 @@ def main():
         except OpenAIError as e:
             st.error(e._message)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
