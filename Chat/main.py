@@ -76,14 +76,12 @@ def main():
 
             with answer_col:
                 st.markdown("#### Answer")
-                st.markdown(answer["output_text"].split("SOURCES: ")[0])
+                # st.write(answer)
+                st.markdown(answer["text"].split("Sources :")[0])
 
             with sources_col:
                 st.markdown("#### Sources")
-                for source in sources:
-                    st.markdown(source.page_content)
-                    st.markdown(source.metadata["source"])
-                    st.markdown("---")
+                st.markdown(answer["text"].split("Sources :")[-1])
 
         except OpenAIError as e:
             st.error(e._message)

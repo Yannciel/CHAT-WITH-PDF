@@ -49,19 +49,17 @@ def search_docs(db: VectorStore, query: str, k=2) -> List[Document]:
     return docs_page_content
 
 
-def get_response_from_query(
-    docs_page_content: List[Document], query: str
-) -> Dict[str, Any]:
+def get_response_from_query(docs_page_content, query: str) -> Dict[str, Any]:
     llm = OpenAI()
 
     prompt = PromptTemplate(
-        input_variables=["question", "docs"],
+        input_variables=["question", "docs_page_content"],
         template="""
             Vous êtes un assistant utile capable de répondre aux questions sur les textes de pdf en se basant sur la contenu du pdf fourni.
             Inclure toujours une section "Sources" dans votre réponse, comprenant uniquement l'ensemble minimal des sources nécessaires pour répondre à la question.
 
             Répondez à la question suivante : {question}
-            En recherchant dans les textes de pdf suivant : {docs}
+            En recherchant dans les textes de pdf suivant : {docs_page_content}
 
             Utilisez uniquement les informations factuelles de la textes pour répondre à la question.
 
@@ -73,7 +71,7 @@ def get_response_from_query(
     chain = LLMChain(llm=llm, prompt=prompt)
 
     answer = chain(
-        {"input_documents": docs_page_content, "question": query},
+        {"docs_page_content": docs_page_content, "question": query},
         return_only_outputs=True,
     )
     return answer
