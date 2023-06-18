@@ -70,21 +70,21 @@ def main():
 
         with get_openai_callback() as cb:
             sources = search_docs(VectorStored, query)
-            print(cb)
-        try:
-            answer = get_response_from_query(sources, query)
+            try:
+                answer = get_response_from_query(sources, query)
+                print(cb)
 
-            with answer_col:
-                st.markdown("#### Answer")
-                # st.write(answer)
-                st.markdown(answer["text"].split("Sources :")[0])
+                with answer_col:
+                    st.markdown("#### Answer")
+                    # st.write(answer)
+                    st.markdown(answer["text"].split("Sources :")[0])
 
-            with sources_col:
-                st.markdown("#### Sources")
-                st.markdown(answer["text"].split("Sources :")[-1])
+                with sources_col:
+                    st.markdown("#### Sources")
+                    st.markdown(answer["text"].split("Sources :")[-1])
 
-        except OpenAIError as e:
-            st.error(e._message)
+            except OpenAIError as e:
+                st.error(e._message)
 
 
 if __name__ == "__main__":
