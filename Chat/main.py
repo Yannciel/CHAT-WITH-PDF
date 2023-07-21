@@ -31,7 +31,7 @@ def clear_submit():
 def get_embeddings(pdf: str):
     store_name = pdf.name[:-4]
     store_name_embeddings = (
-        "/Users/mingqiangwang/Desktop/Codes/CHAT-WITH-PDF/Docs/" + store_name
+        "../Docs/" + store_name
     )
     if os.path.exists("{}.pkl".format(store_name_embeddings)):
         with open("{}.pkl".format(store_name_embeddings), "rb") as f:

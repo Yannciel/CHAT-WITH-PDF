@@ -54,18 +54,33 @@ def get_response_from_query(docs_page_content, query: str) -> Dict[str, Any]:
 
     prompt = PromptTemplate(
         input_variables=["question", "docs_page_content"],
+        # template="""
+        #     Vous êtes un assistant utile capable de répondre aux questions sur les textes de pdf en se basant sur la contenu du pdf fourni.
+        #     Inclure toujours une section "Sources" dans votre réponse, comprenant uniquement l'ensemble minimal des sources nécessaires pour répondre à la question.
+
+        #     Répondez à la question suivante : {question}
+        #     En recherchant dans les textes de pdf suivant : {docs_page_content}
+
+        #     Utilisez uniquement les informations factuelles de la textes pour répondre à la question.
+
+        #     Si vous estimez ne pas avoir suffisamment d'informations pour répondre à la question, dites "Je ne sais pas".
+
+        #     Vos réponses doivent être détaillées et complètes.
+        # """,
         template="""
-            Vous êtes un assistant utile capable de répondre aux questions sur les textes de pdf en se basant sur la contenu du pdf fourni.
-            Inclure toujours une section "Sources" dans votre réponse, comprenant uniquement l'ensemble minimal des sources nécessaires pour répondre à la question.
+        You are a helpful assistant capable of answering questions about PDF texts based on the provided content of the PDF.
 
-            Répondez à la question suivante : {question}
-            En recherchant dans les textes de pdf suivant : {docs_page_content}
+        Always include a "Sources" section in your response, containing only the minimum set of sources necessary to answer the question.
 
-            Utilisez uniquement les informations factuelles de la textes pour répondre à la question.
+        Answer the following question: {question}
 
-            Si vous estimez ne pas avoir suffisamment d'informations pour répondre à la question, dites "Je ne sais pas".
+        By searching in the following PDF texts: {docs_page_content}
 
-            Vos réponses doivent être détaillées et complètes.
+        Use only factual information from the texts to answer the question.
+
+        If you feel you do not have enough information to answer the question, say "Je ne sais pas" (I don't know).
+
+        Your responses should be detailed and complete.
         """,
     )
     chain = LLMChain(llm=llm, prompt=prompt)

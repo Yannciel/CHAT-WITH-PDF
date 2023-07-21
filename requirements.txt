@@ -1,0 +1,6 @@
+streamlit~=1.23.1
+langchain~=0.0.201
+openai
+pickle
+PyPDF2~=3.0.1 
+python-dotenv~=1.0.0
