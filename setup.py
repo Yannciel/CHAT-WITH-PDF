@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="chat-with-pdf",
-    version="1.0.1",
+    version="1.0.2",
     description="Python pacakge that allows to chat with a pdf",
     author="Mingqiang Wang",
     author_email="mingqiang.wang.nlp@gmail.com",
