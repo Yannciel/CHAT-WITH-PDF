@@ -9,5 +9,5 @@ setup(
     packages= find_packages(),
     python_requries=">=3.8",
     install_requires=["streamlit~=1.23.1", "langchain~=0.0.201","PyPDF2~=3.0.1",
-"python-dotenv~=1.0.0"],
+"python-dotenv~=1.0.0","openai~=0.27.5"],
 )
