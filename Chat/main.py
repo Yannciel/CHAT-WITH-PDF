@@ -30,8 +30,11 @@ def clear_submit():
 
 def get_embeddings(pdf: str):
     store_name = pdf.name[:-4]
+    if not os.path.exists("./Docs/"):
+        # If it doesn't exist, create it
+        os.makedirs("./Docs/")
     store_name_embeddings = (
-        "../Docs/" + store_name
+        "./Docs/" + store_name
     )
     if os.path.exists("{}.pkl".format(store_name_embeddings)):
         with open("{}.pkl".format(store_name_embeddings), "rb") as f:
